@@ -28,7 +28,7 @@ class TodoListFragment : Fragment() {
     // TODO: Rename and change types of parameters
 
     private lateinit var viewModel: ListTodoViewModel
-    private val todoListAdapter  = TodoListAdapter(arrayListOf(),{ item -> viewModel.clearTask(item) })
+    private val todoListAdapter  = TodoListAdapter(arrayListOf(),{ item -> viewModel.check(item.uuid) })
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,

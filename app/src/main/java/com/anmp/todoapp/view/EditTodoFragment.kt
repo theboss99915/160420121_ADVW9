@@ -5,14 +5,12 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.EditText
 import android.widget.RadioButton
 import android.widget.Toast
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
 import com.anmp.todoapp.R
-import com.anmp.todoapp.model.Todo
 import com.anmp.todoapp.viewmodel.DetailTodoViewModel
 import kotlinx.android.synthetic.main.fragment_create_todo.*
 
@@ -21,13 +19,13 @@ import kotlinx.android.synthetic.main.fragment_create_todo.*
 
 /**
  * A simple [Fragment] subclass.
- * Use the [CreateTodoFragment.newInstance] factory method to
+ * Use the [EditTodoFragment.newInstance] factory method to
  * create an instance of this fragment.
  */
-class CreateTodoFragment : Fragment() {
+class EditTodoFragment : Fragment() {
     // TODO: Rename and change types of parameters
-
     private lateinit var viewModel: DetailTodoViewModel
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -40,19 +38,35 @@ class CreateTodoFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         viewModel = ViewModelProvider(this).get(DetailTodoViewModel::class.java)
-        val btnAdd = view.findViewById<Button>(R.id.btnAdd)
+        txtJudulTodo.text = "Edit Todo"
+        btnAdd.text = "Save Changes"
+
+        val uuid = EditTodoFragmentArgs.fromBundle(requireArguments()).uuid
+        viewModel.fetch(uuid)
+        observeViewModel()
+
         btnAdd.setOnClickListener {
-            var radio = view.findViewById<RadioButton>(radioGroupPriority.checkedRadioButtonId)
-
-            var todo = Todo(txtTitle.text.toString(), txtNotes.text.toString(), radio.tag.toString().toInt(),0)
-
-            val txtTitle = view.findViewById<EditText>(R.id.txtTitle)
-            val txtNotes = view.findViewById<EditText>(R.id.txtNotes)
-            viewModel.addTodo(todo)
-            Toast.makeText(view.context, "Data added", Toast.LENGTH_LONG).show()
+            val radio = view.findViewById<RadioButton>(radioGroupPriority.checkedRadioButtonId)
+            viewModel.update(txtTitle.text.toString(), txtNotes.text.toString(), radio.tag.toString().toInt(), uuid)
+            Toast.makeText(view.context, "Todo updated", Toast.LENGTH_SHORT).show()
             Navigation.findNavController(it).popBackStack()
-
         }
+
     }
+
+    private fun observeViewModel() {
+        viewModel.todoLD.observe(viewLifecycleOwner, Observer {
+            txtTitle.setText(it.title)
+            txtNotes.setText(it.notes)
+            when (it.priority) {
+                1 -> radioLow.isChecked = true
+                2 -> radioMedium.isChecked = true
+                else -> radioHigh.isChecked = true
+            }
+
+    })
+
+    }
+
 
 }
